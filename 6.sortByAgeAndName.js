@@ -1,34 +1,3 @@
-const arr = [
-	{
-		name: "Alexey Ivanov",
-		age: 50
-	},
-	{
-		name: "Ervin Howell",
-		age: 14
-	},
-	{
-		name: "Kurtis Xeissnat",
-		age: 37
-	},
-	{
-		name: "Chelsey Dietrich",
-		age: 34
-	},
-	{
-		name: "Kurtis Weissnat",
-		age: 37
-	},
-	{
-		name: "Александ Иванов",
-		age: 50
-	},
-	{
-		name: "Clementina DuBuque",
-		age: 14
-	},
-]
-
 const sort = (arr) => {
 	// Задаём констансту с длиной массива
 	// во избебжание повторных вычислений
@@ -86,6 +55,37 @@ const sort = (arr) => {
 	// Возвращаем отсортированный массив
 	return sorted;
 }
+
+const arr = [
+	{
+		name: "Alexey Ivanov",
+		age: 50
+	},
+	{
+		name: "Ervin Howell",
+		age: 14
+	},
+	{
+		name: "Kurtis Xeissnat",
+		age: 37
+	},
+	{
+		name: "Chelsey Dietrich",
+		age: 34
+	},
+	{
+		name: "Kurtis Weissnat",
+		age: 37
+	},
+	{
+		name: "Александ Иванов",
+		age: 50
+	},
+	{
+		name: "Clementina DuBuque",
+		age: 14
+	},
+]
 
 const result = sort(arr);
 
