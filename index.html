@@ -82,7 +82,8 @@
 			const container = document.querySelector('#container');
 			const frame = document.querySelector('#frame');
 			const buttons = document.querySelectorAll('button');
-			frame.innerHTTL = "";
+			frame.innerHTML = "";
+			container.innerHTML = "";
 			for (const button of buttons) {
 				button.addEventListener('click', async () => {
 					console.clear();
