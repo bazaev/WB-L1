@@ -82,10 +82,10 @@
 			const container = document.querySelector('#container');
 			const frame = document.querySelector('#frame');
 			const buttons = document.querySelectorAll('button');
-			frame.innerHTML = "";
-			container.innerHTML = "";
 			for (const button of buttons) {
 				button.addEventListener('click', async () => {
+					frame.innerHTML = "";
+					container.innerHTML = "";
 					console.clear();
 					const name = button.innerText;
 					const response = await fetch(`./${name}`);
