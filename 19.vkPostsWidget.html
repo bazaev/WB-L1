@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="20.localStorageUsage.js"></script>
+	<script src="18.localStorageSpace.js"></script>
+	<script>
+		let items = [];
+		let itemsCount = 0; // Количество загруженных постов для offset
+		let profile;
+		let loading = false;
+		const count = 100; // Количество подгружаемых постов
+
+		// Перед вызовом localStorageSpace резервируем данные виджета
+		// и восстанавливаем их после завершения localStorageSpace
+		// так как localStorageSpace очищает localStorage
+		const widgetData = localStorage.getItem("widget");
+		const storageSpace = localStorageSpace().toFixed(2);
+		localStorage.setItem("widget", widgetData);
+
+		// callBack для JSONP
+		function callBack({ response }) {
+			const isLocalData = response.isLocalData;
+			let newItems = response.items;
+
+			// Если данные из localStorage
+			if (!isLocalData) {
+				// Избавляемся от всех элементов с медиа
+				newItems = newItems.filter(item => !item.attachments?.length);
+
+				// Оставляем только полезную нагрузку
+				// для экономии места localStorage
+				newItems = newItems.map(({ text, date }) => {
+					date = new Date(date * 1000);
+
+					// Преобразовываем date в читаемый вид
+					date = date.toLocaleString('ru', {
+						hour: 'numeric',
+						minute: 'numeric',
+						month: 'long',
+						day: 'numeric'
+					});
+
+					return {
+						text,
+						date
+					}
+				})
+			}
+
+			// Добавляем новые данные к старым
+			items = items.concat(newItems);
+
+			// Если переменная profile ещё не назначена
+			// то присваиваем ей профиль группы
+			if (!profile) {
+				profile = response.groups[0];
+			}
+
+			// Увеличиваем itemsCount на количество запрошенных постов
+			itemsCount += count;
+
+			// Если данные не из localStorage
+			if (!isLocalData) {
+				// Рендерим посты
+				this(items);
+			}else{
+				// Иначе заменяем itemsCount данными из хранилища
+				// и вызываем рендер последних count постов
+				itemsCount = response.itemsCount
+				this(items.slice(-count));
+			}
+
+			// Сохраняем данные в localStorage
+			saveData();
+
+			// Меняем loading на false и скрываем loader
+			loading = false;
+			loader.style.visibility = 'hidden';
+		}
+
+		function saveData() {
+			try {
+				// Задаём новые данные для widget
+				localStorage.setItem('widget', JSON.stringify({items, profile, itemsCount}));
+			}catch(e) {
+				// удаляем первые count постов для освобождения
+				// пространства и пробуем сохранить снова
+				items.splice(0, count);
+				saveData();
+			}
+			
+			// Выводим в консоль информацию о пространстве хранилища
+			console.log(`${localStorageUsage().toFixed(2)}КБ / ${storageSpace}КБ`)
+		}
+
+		function loadData() {
+			// Получаем данные widget из localStorage
+			const widget = localStorage.getItem('widget');
+
+			// Если в хранилище не пусто
+			// то переводим JSON в объект и возвращаем
+			if (widget) {
+				try {
+					const data = JSON.parse(widget);
+					return data;
+				}catch(e) {
+					console.error(e);
+				}
+			}
+		}
+
+		function widget() {
+			// Подготавливаем элементы
+			const posts = document.querySelector('.widget__posts');
+			const loader = document.getElementById('loader');
+			const postTemplate = document.getElementById('post');
+	
+			// Создаём фрагмент для хранения шаблона
+			// и переносим его из DOM
+			let post = document.createDocumentFragment();
+			post = post.appendChild(postTemplate).content;
+
+			// Создаём наблюдателя который будет реагировать
+			// когда элемент в / вне поля зрения
+			const loaderIntersection = new IntersectionObserver(({ [0]: { isIntersecting } }) => {
+				// Если элемент (loader) в поле зрения
+				// и загрузка в данный момент не осуществляется
+				// отображаем его и вызываем getPosts для загрузки данных
+				if (isIntersecting && !loading) {
+					loading = true;
+					loader.style.visibility = '';
+					getPosts(itemsCount);
+				}
+			});
+
+			// Начинаем отслеживание видимости элемента
+			loaderIntersection.observe(loader);
+
+			function renderPosts(items = []) {
+				// Создаём фрагмент для коллекции постов
+				// дабы сократить нагрузку на DOM
+				const postNodes = document.createDocumentFragment();
+
+				// Перебираем все посты, наполняем их
+				// и добавляем в postNodes
+				items.forEach(item => {
+					// Разбиваем текст поста на слова
+					const words = item.text.split(" ");
+					// Вырезаем только первые 30 слов и объединяем
+					let text = words.splice(0, 30).join(" ");
+					// Объединяем остальные слова в отдельную переменную
+					let moreText = words.join(" ");
+
+					// Создаем копию шаблона поста
+					const node = post.cloneNode(true);
+					const post__text = node.querySelector('.post__text');
+					// Заполняем текст поста
+					post__text.innerHTML = text;
+
+					// Если остались слова
+					if (moreText) {
+						// Создаем ноду для кнопки "Показать полностью"
+						const showMore = document.createElement('span');
+						showMore.innerText = "...";
+
+						// Создаем кнопку "Показать полностью"
+						const showMoreButton = document.createElement('a');
+						showMoreButton.innerText = "Показать полностью";
+						showMoreButton.href = "javascript:void(0)";
+						// При клике на кнопку "Показать полностью"
+						showMoreButton.addEventListener('click', () => {
+							// Заменяем текущую ноду оставщимся текстом
+							showMore.outerHTML = " " + moreText;
+						});
+
+						showMore.appendChild(showMoreButton);
+						post__text.appendChild(showMore);
+					}
+
+					node.querySelector('.post__avatar img').src = profile.photo_50;
+					node.querySelector('.post__name').innerText = profile.name;
+					node.querySelector('.post__time').innerText = item.date;
+
+					// Добавляем пост в postNodes
+					postNodes.appendChild(node);
+				})
+
+				// Выводим посты
+				posts.appendChild(postNodes);
+			}
+
+			// Привязываем renderPosts к this для callBack 
+			callBack = callBack.bind(renderPosts);
+		}
+
+		function getPosts(offset = 0) {
+			// Если постов ещё нет то пробуем получить
+			// их из локального хранилища и передать
+			// в callBack в случае успеха, завершая исполнение
+			// функции посредством return
+			if (!items.length) {
+				const data = loadData();
+				if (data) {
+					const { items, profile, itemsCount } = data;
+					return callBack({response: {items, groups:[profile], itemsCount, isLocalData: true}});
+				}
+			}
+
+			// Получаем данные по JSONP
+			const script = document.createElement('script');
+			script.src = `https://api.vk.com/method/wall.get?access_token=3fc02f593fc02f593fc02f59a03f90ae3733fc03fc02f5967370c74eeadb6aecd2313b1&v=5.137&owner_id=-31480508&count=${count}&callback=callBack&offset=${offset}&extended=1`;
+
+			document.head.appendChild(script);
+			document.head.removeChild(script);
+		}
+		
+		window.addEventListener('DOMContentLoaded', widget);
+	</script>
+	<style>
+		html {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
+		}
+		.widget {
+			display: flex;
+			flex-direction: column;
+			width: 350px;
+			height: 450px;
+			margin: 0 auto;
+			box-shadow: 0 0 15px -0px #00000033;
+			border-radius: 10px;
+			overflow: hidden;
+		}
+
+		.widget__header {
+			position: relative;
+			padding: 10px;
+		}
+
+		.widget__title {
+			margin: 0;
+			font-size: 20px;
+			line-height: 24px;
+			font-weight: 700;
+		}
+
+		.widget__body {
+			flex: 1;
+			padding: 0 10px;
+			margin-bottom: 10px;
+			overflow: auto;
+		}
+
+		.widget__posts {
+			margin-bottom: 10px;
+		}
+
+		.post {
+			margin-bottom: 10px;
+		}
+
+		.post__header {
+			display: flex;
+			align-items: center;
+		}
+
+		.post__avatar {
+			margin-right: 10px;
+		}
+
+		.post__avatar img {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+		}
+
+		.post__info {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.post__name {
+			margin: 0;
+			font-size: 16px;
+			line-height: 20px;
+			font-weight: 700;
+		}
+		
+		.post__time {
+			margin: 0;
+			font-size: 12px;
+			line-height: 15px;
+			color: #828282;
+		}
+
+		.post__body {
+			margin-bottom: 10px;
+		}
+
+		.post__text {
+			margin: 0;
+			font-size: 14px;
+			line-height: 20px;
+		}
+
+		.post__text a {
+			display: block;
+			text-align: right;
+			text-decoration: none;
+			font-weight: 600;
+			color: #2f82d2;
+		}
+
+		#loader {
+			text-align: center;
+			margin-bottom: 10px;
+			font-size: 14px;
+			line-height: 20px;
+			color: #828282;
+		}
+	</style>
+</head>
+<body>
+	<div class="widget">
+		<div class="widget__header">
+			<h2 class="widget__title">VK Posts</h2>
+		</div>
+		<div class="widget__body">
+			<div class="widget__posts">
+				<template id="post">
+					<div class="post">
+						<div class="post__header">
+							<div class="post__avatar">
+								<img src="" alt="avatar">
+							</div>
+							<div class="post__info">
+								<div class="post__name"></div>
+								<div class="post__time"></div>
+							</div>
+						</div>
+						<div class="post__body">
+							<div class="post__text"></div>
+						</div>
+					</div>
+				</template>
+			</div>
+			<div id="loader">
+				Loading...
+			</div>
+		</div>
+	</div>
+</body>
+</html>

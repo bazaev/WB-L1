@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Template</title>
+	<script>
+		const tasks = {
+			"Pet Project": ["Task 1", "Task 2", "Task 3"],
+			"Work": ["Task 4", "Task 5", "Task 6"],
+		}
+
+		window.addEventListener('DOMContentLoaded', () => {
+			// Получаем шаблон
+			const tpl = document.querySelector('#tpl');
+
+			// Перебираем объект задач (tasks)
+			for (const key in tasks) {
+				// Получаем задачи
+				const task = tasks[key];
+				// Клонируем шаблон
+				const tplInstance = tpl.content.cloneNode(true);
+				// Получаем заголовок
+				const title = tplInstance.querySelector('h1');
+				// Получаем шаблон для задач
+				const taskTpl = tplInstance.querySelector('#task');
+				// Создаем коллекцию задач
+				const taskCollection = document.createDocumentFragment();
+				
+				// Перебираем задачи
+				for (const item of task) {
+					// Клонируем шаблон
+					const taskInstance = taskTpl.content.cloneNode(true);
+					// Получаем элемент который будет отображать текст задачи
+					const taskText = taskInstance.querySelector('label > span');
+					// Заполняем текст задачи
+					taskText.innerText = item;
+					// Добавляем задачу в коллекцию
+					taskCollection.appendChild(taskInstance);
+				}
+
+				// Заполняем заголовок
+				title.innerText = key;
+				
+				// Заменяем шаблон задач на готовый список
+				taskTpl.parentNode.replaceChild(taskCollection, taskTpl);
+				
+				// Добавляем в DOM
+				document.body.appendChild(tplInstance);
+			}
+		})
+	</script>
+	<style>
+		label {
+			display: block;
+			padding: 12px;
+			cursor: pointer;
+		}
+
+		label:hover {
+			background-color: #ddd;
+		}
+	</style>
+</head>
+<body>
+	<template id="tpl">
+		<h1></h1>
+		<template id="task">
+			<label>
+				<input type="checkbox">
+				<span>123</span>
+			</label>
+		</template>
+	</template>
+</body>
+</html>

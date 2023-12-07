@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>elementAndStyle</title>
+	<script>
+		window.addEventListener('DOMContentLoaded', ()=>{
+			const [
+				element,
+				element2,
+				element3,
+				element4,
+				element5,
+				element6
+			] = document.querySelectorAll('div');
+
+			// Вариант первый
+			const elementAndStyle = () => {
+				// Присваиваем inline стили элементу с помощью свойства style
+				element.style.backgroundColor = 'red';
+				element.style.padding = '10px';
+			}
+
+			// Вариант второй
+			const elementAndStyle2 = () => {
+				// Задаём inline стили элементу
+				element2.setAttribute('style', 'background-color: darkred; padding: 10px');
+			}
+
+			// Вариант третий
+			const elementAndStyle3 = () => {
+				// Задаём inline стили элементу
+				element3.style.cssText = 'background-color: green; padding: 10px';
+			}
+
+			// Вариант четвертый
+			const elementAndStyle4 = () => {
+				// Присваиваем класс элементу
+				element4.classList.add('test4');
+				
+				// Создаем стиль
+				const style = document.createElement('style');
+				style.textContent = '.test4 { background-color: darkgreen; padding: 10px; }';
+				
+				// Добавляем стиль
+				document.head.appendChild(style);
+			}
+
+			// Вариант пятый
+			const elementAndStyle5 = () => {
+				// Присваиваем класс элементу
+				element5.classList.add('test5');
+				// Создаем стиль
+				const style = document.createElement('style');
+				document.head.appendChild(style);
+				// Добавляем стиль с помощью метода insertRule в свойстве sheet
+				style.sheet.insertRule('.test5 { background-color: blue; padding: 10px; }');
+			}
+
+			// Вариант шестой
+			const elementAndStyle6 = () => {
+				// Присваиваем класс элементу
+				element6.classList.add('test6');
+				// Создаем стиль
+				const sheet = new CSSStyleSheet();
+				// Добавляем стиль с помощью метода insertRule
+				sheet.insertRule('.test6 { background-color: darkblue; padding: 10px; }');
+				// Добавляем стиль в глобальный массив adoptedStyleSheets
+				document.adoptedStyleSheets.push(sheet);
+			}
+
+			elementAndStyle();
+			elementAndStyle2();
+			elementAndStyle3();
+			elementAndStyle4();
+			elementAndStyle5();
+			elementAndStyle6();
+		})
+	</script>
+</head>
+<body>
+	<div>1</div>
+	<div>2</div>
+	<div>3</div>
+	<div>4</div>
+	<div>5</div>
+	<div>6</div>
+</body>
+</html>

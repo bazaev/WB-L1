@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Geo Search</title>
+	<script>
+		const apiKey = "cb17f3ad-502f-404d-8ebf-2bb863633233";
+
+		function geoSearch() {
+			// Получение элементов поискового поля и контейнера подсказок
+			const search = document.querySelector('#search');
+			const hints = document.querySelector('#hints');
+
+			let timeOut = null;
+			
+			// Обработчик нажатия на подсказку
+			function hintHandler({ target }) {
+				// Установка значения поискового поля в текст выбранной подсказки
+				search.value = target.innerText;
+				// Очищаем контейнер подсказок
+				clearHints();
+			}
+
+			// Функция для создания элемента подсказки
+			function createHint(name, city) {
+				const hint = document.createElement('div');
+				hint.classList.add('search__hint');
+				hint.innerText = (city ? city + ", " : "") + name;
+				hint.addEventListener('click', hintHandler);
+				return hint;
+			}
+
+			// Функция для очистки контейнера подсказок
+			function clearHints() {
+				hints.innerHTML = '';
+			}
+
+			async function getHints() {
+				// Получение значения из поискового поля
+				const { value } = search;
+				// Выполнение запроса
+				const data = await request(value);
+				// Получение списка подсказок
+				const items = data.response.GeoObjectCollection.featureMember;
+
+				// Если подсказки есть
+				if (items.length) {
+					// Очищаем контейнер подсказок
+					clearHints();
+					// Создаём фрагмент для подсказок
+					const hintNodes = document.createDocumentFragment();
+					// Добавляем подсказки в фрагмент
+					for (const item of items) {
+						const { GeoObject: { name, description } } = item;
+						const city = description?.split(',')?.[0];
+						const hint = createHint(name, city);
+						hintNodes.appendChild(hint);
+					}
+					// Добавляем фрагмент в контейнер подсказок
+					hints.appendChild(hintNodes);
+				}
+			}
+
+			// 
+			async function request(value) {
+				const response = await fetch(`https://geocode-maps.yandex.ru/1.x/?apikey=${apiKey}&geocode=${value}&format=json`);
+				const data = await response.json();
+				return data;
+
+			}
+			
+			// Обработчик ввода
+			function searchHandler({ target }) {
+				const value = target.value;
+				
+				// Очистка таймера
+				if (timeOut) {
+					clearTimeout(timeOut);
+				}
+
+				// Если ввод пустой, очищаем контейнер подсказок
+				if (!value) {
+					clearHints();
+					return;
+				}
+
+				// Вызов функции поиска подсказок
+				timeOut = setTimeout(getHints, 500);
+			}
+
+			// Добавляем обработчик ввода
+			search.addEventListener('input', searchHandler)
+		}
+
+		window.addEventListener('DOMContentLoaded', geoSearch);
+	</script>
+	<style>
+		.search {
+			position: relative;
+			width: 300px;
+			margin: 0 auto;
+		}
+
+		.search__input {
+			width: 100%;
+			padding: 10px;
+			border: 1px solid #000;
+			outline: none;
+			box-sizing: border-box;
+			font-size: 16px;
+			transition: border-color .3s ease;
+		}
+
+		.search__hints {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			width: 100%;
+			max-height: 350px;
+			background-color: #fff;
+			border: 1px solid #000;
+			border-top: none;
+			overflow-y: auto;
+			z-index: 1;
+			box-sizing: border-box;
+		}
+
+		.search__hint {
+			padding: 10px;
+			cursor: pointer;
+			transition: background-color .3s ease;
+		}
+
+		.search__hint:hover {
+			background-color: #000;
+			color: #fff;
+		}
+
+		.search__hint:not(:last-child) {
+			border-bottom: 1px solid #000;
+		}
+	</style>
+</head>
+<body>
+	<div class="search">
+		<input type="text" name="search" placeholder="Поиск" class="search__input" id="search">
+		<div class="search__hints" id="hints">
+			
+		</div>
+	</div>
+</body>
+</html>

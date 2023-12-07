@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Table</title>
+	<script>
+		const url = 'http://www.filltext.com/?rows=1000&fname=%7BfirstName%7D&lname=%7BlastName%7D&tel=%7Bphone%7Cformat%7D&address=%7BstreetAddress%7D&city=%7Bcity%7D&state=%7BusState%7Cabbr%7D&zip=%7Bzip%7D&pretty=true';
+		
+		function table(data, count = 50) {
+			// Задаём номер страницы по умолчанию
+			let page = 0;
+
+			// Получаем общее количество страниц
+			const pages = data.length / count - 1;
+
+			// Подготавливаем нужные элементы
+			const nodes = document.createDocumentFragment();
+			const table = document.createElement('table');
+			const thead = document.createElement('thead');
+			const body = document.createElement('tbody');
+			const pagination = document.createElement('div');
+
+			const paginationHandler = ({ target }) => {
+				// Получаем новый номер страницы
+				const newPage = +target.dataset.page;
+				// Проверяем новый номер страницы
+				if (!isNaN(newPage) && newPage <= pages && newPage >= 0) {
+					// Запоминаем новый номер страницы
+					page = +target.dataset.page;
+					// Перерисовываем таблицу
+					render();
+				}
+			}
+
+			const sort = ({ target }) => {
+				// Получаем ключ сортировки
+				const key = target.innerText;
+				// Сортируем данные
+				data = data.sort((a, b) => typeof a[key] === 'string' ? a[key].localeCompare(b[key]) : a[key] > b[key]);
+				// Если по данному ключу уже была сортировка
+				if (target.dataset.sort) {
+					// Реверсируем данные
+					data.reverse();
+					// Сбрасываем параметр сортировки
+					target.dataset.sort = '';
+				}else{
+					// Иначе присваиваем параметр сортировки
+					target.dataset.sort = 1;
+				}
+				// Перерисовываем таблицу
+				render();
+			}
+
+			function render() {
+				// Получаем смещение для текущей страницы
+				const offset = page * count;
+				// Создаём фрагмент для элементов
+				const childs = document.createDocumentFragment();
+
+				// Цикл на count итераций со сдвигом
+				for (let i = offset; i < offset + count; i++) {
+					// Создаём строку
+					const tr = document.createElement('tr');
+
+					// Проходим по элементам
+					for (const key in data[i]) {
+						// Создаём ячейку
+						const td = document.createElement('td');
+						// Заполняем ячейку
+						td.innerText = data[i][key];
+						// Добавляем ячейку в строку
+						tr.appendChild(td);
+					}
+					// Добавляем строку в коллекцию
+					childs.appendChild(tr);
+				}
+
+				// Очищаем тело таблицы
+				body.innerHTML = '';
+				// Добавляем коллекцию в тело таблицы
+				body.appendChild(childs);
+
+				// Проверка на конец и начало таблицы
+				const prevDisabled = page - 1 < 0 ? 'disabled' : '';
+				const nextDisabled = page >= pages ? 'disabled' : '';
+
+				// Рендерим пагинацию
+				pagination.innerHTML = `
+					<button data-page="${0}"${prevDisabled}>First</button>
+					<button data-page="${page - 1}"${prevDisabled}>Prev</button>
+					<span>${page + 1}/${pages + 1}</span>
+					<button data-page="${page + 1}"${nextDisabled}>Next</button>
+					<button data-page="${pages}"${nextDisabled}>Last</button>
+				`;
+			}
+
+			// Устаналиваем для таблицы атрибуты border
+			table.setAttribute('border', '1');
+
+			// Заполняем шапку таблицы
+			for (const key in data[0]) {
+				const th = document.createElement('th');
+				th.innerText = key;
+				th.addEventListener('click', sort);
+				thead.appendChild(th);
+			}
+
+			// Навешиваем слушатель событий на пагинацию
+			pagination.addEventListener('click', paginationHandler)
+
+			// Добавляем в таблицу шапку и тело
+			table.appendChild(thead);
+			table.appendChild(body);
+
+			// Добавляем таблицу и пагинацию в фрагмент
+			nodes.appendChild(table);
+			nodes.appendChild(pagination);
+
+			// Рендерим тело таблицы и пагинацию
+			render()
+
+			// Возвращаем фрагмент с таблицей и пагинацией
+			return nodes
+		}
+
+		window.addEventListener('DOMContentLoaded', async () => {
+			const response = await fetch(url);
+			const data = await response.json();
+			const tableNodes = table(data);
+	
+			document.body.appendChild(tableNodes);
+		})
+	</script>
+</head>
+<body>
+	
+</body>
+</html>

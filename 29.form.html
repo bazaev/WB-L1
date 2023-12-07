@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Form</title>
+	<script>
+		window.addEventListener('DOMContentLoaded', () => {
+			// Получаем форму
+			const form = document.querySelector('#form');
+
+			const formSubmitHandler = async ({ target }) => {
+				// Отменяем отправку формы
+				event.preventDefault();
+
+				// Получаем данные из формы
+				const formData = new FormData(target);
+				
+				// Отправляем данные
+				const response = await fetch("#", {
+					method: "POST",
+					body: formData
+				});
+
+				// Деструктурируем данные формы
+				const {
+					name,
+					age,
+					sex,
+					isHuman
+				} = Object.fromEntries(formData);
+
+				// Подготавливаем сообщение
+				const text = `Вас зовут ${name}, Вы - ${isHuman ? '' : 'не '}человек ${sex === 'male' ? 'мужского' : 'женского'} пола возраста ${age} лет.\n\nДанные ${response.status === 200 ? '' : 'не '}были успешно отправлены.`;
+				
+				// Отображаем сообщение
+				alert(text);
+			}
+			
+			form.addEventListener('submit', formSubmitHandler)
+		})
+	</script>
+	<style>
+		label {
+			display: block;
+			margin: 20px 0;
+		}
+	</style>
+</head>
+<body>
+	<form id="form" action="#">
+		<label>
+			Как Вас зовут?<br />
+			<input type="text" name="name" value="Алексей">
+		</label>
+		<label>
+			<input type="checkbox" name="isHuman">
+			Я человек
+		</label>
+		<label>
+			Пол:
+			<select name="sex">
+				<option value="male">Мужской</option>
+				<option value="female">Женский</option>
+			</select>
+		</label>
+		<label>
+			Сколько Вам лет?<br />
+			<input type="number" name="age" value="18">
+		</label>
+		<button type="submit">Submit</button>
+	</form>
+</body>
+</html>

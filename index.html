@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="#" />
+	<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" data-manual></script>
+	<title>L1</title>
+	<style>
+		html, body {
+			padding: 0;
+			margin: 0;
+		}
+		.section {
+			position: relative;
+			display: flex;
+			height: 500px;
+		}
+		nav {
+			width: 300px;
+			display: flex;
+			flex-direction: column;
+			overflow: auto;
+		}
+		#frame {
+			flex: 1;
+		}
+		button {
+			padding: 10px;
+			cursor: pointer;
+			font-weight: 700;
+		}
+		pre {
+			margin: 0px !important;
+		}
+		#container {
+			white-space: pre-wrap;
+		}
+		#console {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			width: calc(100% - 320px);
+			padding: 0 10px;
+			background-color: black;
+			color: white;
+			max-height: 150px;
+			overflow: auto;
+		}
+
+		#console * {
+			white-space: pre-wrap;
+		}
+	</style>
+	<script>
+		window.addEventListener('DOMContentLoaded', () => {
+			const cons = document.querySelector('#console');
+			const origConsole = window.console;
+			window.console = {
+				log: function() {
+					origConsole.log(...arguments);
+					const t = [...arguments].map(e => {
+						let s = JSON.stringify(e, null, 2);
+						if (s[0] === '"') {
+							s = s.split('').slice(1,-1).join('');
+						}
+						return s
+					}).join(' ')
+					cons.innerHTML += `<pre><code>${t}</code></pre>`
+				},
+				error: function(arguments) {
+					origConsole.error(arguments);
+					cons.innerHTML += `<pre>${JSON.stringify(arguments, null, 2)}</pre>`
+				},
+				clear: () => {
+					cons.innerHTML = "";
+					origConsole.clear()
+				}
+			}
+
+			const container = document.querySelector('#container');
+			const frame = document.querySelector('#frame');
+			const buttons = document.querySelectorAll('button');
+			frame.innerHTTL = "";
+			for (const button of buttons) {
+				button.addEventListener('click', async () => {
+					console.clear();
+					const name = button.innerText;
+					const response = await fetch(`./${name}`);
+					const fileType = name.split('.').at(-1);
+					const data = await response.text();
+					let code = data;
+					if (fileType === 'js') {
+						eval(data);
+					}else{
+						const iframe = document.createElement('iframe');
+						iframe.width = '100%';
+						iframe.height = '100%';
+						iframe.src = `./${name}`;
+						frame.innerHTML = "";
+						frame.appendChild(iframe);
+						iframe.contentWindow.console = window.console;
+						code = code.match(/<script>(.*?)<\/script>/is)?.[1];
+						if (!code) return;
+						code = code.replaceAll(/\n\t{2}/sg, '\n');
+					}
+					code = code.replaceAll(/\t/sg, '  ');
+					code = Prism.highlight(code, Prism.languages.javascript, 'javascript');
+					container.innerHTML = code;
+				})
+			}
+		})
+	</script>
+</head>
+<body>
+	<div class="section">
+		<nav>
+			<button>1.palindrome.js</button>
+			<button>2.strangeNumber.js</button>
+			<button>3.MathX..js</button>
+			<button>4.declension.js</button>
+			<button>5.JSONToSinglyConnectedList.js</button>
+			<button>6.sortByAgeAndName.js</button>
+			<button>7.functionsCall.js</button>
+			<button>8.functionsCallAndResults.js</button>
+			<button>9.JSON.stringify.js</button>
+			<button>10.JSON.parse.js</button>
+			<button>11.areas.js</button>
+			<button>12.theBook.js</button>
+			<button>13.Shape.js</button>
+			<button>14.promise.js</button>
+			<button>15.await.js</button>
+			<button>16.modules/16.modules.html</button>
+			<button>17.geoSearch.html</button>
+			<button>18.localStorageSpace.js</button>
+			<button>19.vkPostsWidget.html</button>
+			<button>20.localStorageUsage.js</button>
+			<button>21.callStackSize.js</button>
+			<button>22.writeInWrite.html</button>
+			<button>23.passwordDifficulty.js</button>
+			<button>24.table.html</button>
+			<button>25.elementAndStyle.html</button>
+			<button>26.recurseDOM.html</button>
+			<button>27.addAnimation.html</button>
+			<button>28.template.html</button>
+			<button>29.form.html</button>
+		</nav>
+		<div id="frame"></div>
+		<div id="console"></div>
+	</div>
+	<pre  class="language-js" id="container"><code ></code></pre>
+</body>
+</html>

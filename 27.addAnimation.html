@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script>
+		window.addEventListener('DOMContentLoaded', () => {
+			// Получаем первый элемент
+			const element = document.body.children[0];
+			// Создаем массив с кадрами
+			const frames = [
+				{
+					transform: "scale(1)"
+				}, {
+					transform: "scale(1.06)",
+					filter: "grayscale(.125)"
+				}, {
+					transform: "scale(1.035)",
+					filter: "grayscale(0)"
+				}, {
+					transform: "scale(1.06)",
+					filter: "grayscale(.125)"
+				}, {
+					transform: "scale(1)"
+				}
+			];
+
+			// Создаём объект с настройками
+			const options = {
+				duration: 1000,
+				iterations: Infinity,
+				easing: 'ease-out'
+			};
+
+			// Применяем анимацию
+			element.animate(frames, options)
+		})
+	</script>
+	<style>
+		html {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
+		}
+		div {
+			display: inline-block;
+			font-size: 100px;
+		}
+	</style>
+</head>
+<body>
+	<div>❤️</div>
+</body>
+</html>
