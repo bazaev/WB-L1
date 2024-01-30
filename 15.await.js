@@ -26,6 +26,6 @@ const getPercentOfSize = async (url, percent) => {
 	}
 }
 
-const url = "/L1/blank.gif";
+const url = "/blank.gif";
 
 getPercentOfSize(url, 50).then(console.log)
