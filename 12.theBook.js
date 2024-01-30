@@ -1,9 +1,3 @@
-// const book = {
-// 	name: "Древние легенды двемеров",
-// 	author: "Sirilonwe",
-// 	year: 188
-// }
-
 class Book {
 	#name;
 	#author;
@@ -155,20 +149,20 @@ const BookV5 = {
 }
 
 
-const book1 = new BookV2();
-const book2 = new Book();
+const book1 = new Book();
+const book2 = new BookV2();
 const book3 = new BookV3();
 const book4 = new BookV4();
 const book5 = BookV5;
 
-book1.setAuthor("authorName");
-book2.author = "authorName2";
+book1.author = "authorName";
+book2.setAuthor("authorName2");
 book3.setAuthor("authorName3");
 book4.setAuthor("authorName4");
 book5.setAuthor("authorName5");
 
-console.log(book1.getAuthor());
-console.log(book2.author);
+console.log(book1.author);
+console.log(book2.getAuthor());
 console.log(book3.getAuthor());
 console.log(book4.getAuthor());
 console.log(book5.getAuthor());
