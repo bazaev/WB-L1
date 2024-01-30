@@ -52,7 +52,7 @@ const getPictureInfoV4 = async (url) => {
 	}
 }
 
-const url = "/L1/blank.gif";
+const url = "/blank.gif";
 
 getPictureInfo(url)
 	.then(console.log)
